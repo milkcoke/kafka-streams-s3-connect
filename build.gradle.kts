@@ -26,6 +26,7 @@ dependencies {
 	implementation("org.apache.kafka:kafka-streams:3.7.0")
 	implementation ("io.micrometer:micrometer-registry-prometheus:1.12.5")
 
+	implementation("aws.sdk.kotlin:s3:1.2.10")
 	implementation("org.slf4j:slf4j-api:2.0.12")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
