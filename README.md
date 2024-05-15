@@ -2,6 +2,7 @@
 Exactly once sourcing from AWS S3 to Kafka topic which s3 object consists of json record.
 
 # Architecture
+![Architecture Diagram](/assets/architecture_diagram.png)
 
 ### (1) PutObject
 A Client upload source files to s3, Consider file size not too large
@@ -14,10 +15,10 @@ Produce s3 object path on s3 topic
 #### Example
 ```json
 {
-	"s3": {
-		"bucket": "",
-	    "path": ""
-	}
+  "s3": {
+    "bucket": "",
+    "path": ""
+  }
 }
 ```
 
