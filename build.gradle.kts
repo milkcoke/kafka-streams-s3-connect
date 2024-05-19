@@ -26,11 +26,12 @@ dependencies {
 	implementation("org.apache.kafka:kafka-streams:3.7.0")
 	implementation ("io.micrometer:micrometer-registry-prometheus:1.12.5")
 
-	implementation("aws.sdk.kotlin:s3:1.2.10")
+	implementation("aws.sdk.kotlin:s3:1.2.15")
+
 	implementation("org.slf4j:slf4j-api:2.0.12")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
-
+	testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
 	testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.apache.kafka:kafka-streams-test-utils:3.7.0")
@@ -44,7 +45,7 @@ tasks.withType<Test> {
 }
 
 kotlin {
-	jvmToolchain(21)
+	jvmToolchain(17)
 }
 
 
