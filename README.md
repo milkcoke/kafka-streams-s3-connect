@@ -36,14 +36,12 @@ Produce all records from the object to sink topic
 ![JDK-17](https://img.shields.io/badge/jdk->=v17-FF7900.svg?style=for-the-badge&logo=openjdk&logoColor=FF7900)
 ![Apache Kafka](https://img.shields.io/badge/Kafka->=v3.5.0-F28D1A?style=for-the-badge&logo=apache-kafka)
 
-# Quick Start
+# Steps
 
 ## (0) Split file
 ```bash
-# go to source directory
-$ cd ./data/source
-# Split the large source file by line number
-$ ./scripts/splitfile.sh [target-file-path] [line-number] 
+# Split the large source file into smaller ones by line number
+$ scripts/splitfile.sh [target-file-path] [line-number] 
 ```
 
 ## (1) S3 upload and extract s3 path list file
@@ -59,7 +57,7 @@ $ aws s3 cp [local-path] [s3-path] --recursive | tr '\r' '\n' | grep upload | aw
 ## (2) Create ndjson file for producing records 
 ```bash
 # output file name is `records.ndjson`
-$ ./scripts/generate_json_record.sh [list-file-path]
+$ scripts/generate_json_record.sh [list-file-path]
 ```
 
 ## (3) Produce s3 records
