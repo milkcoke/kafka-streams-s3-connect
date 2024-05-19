@@ -21,5 +21,3 @@ kafka-console-producer.sh --broker-list "$bootstrap_servers" \
 --producer-property enable.idempotence=true \
 --producer-property request-required-acks=-1 \
 --producer-property max.in.flight.requests.per.connection=1
-
-#--producer-property acks=all \
