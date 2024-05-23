@@ -33,8 +33,8 @@ Get object from s3
 Produce all records from the object to sink topic
 
 # Prerequisites
-![JDK-17](https://img.shields.io/badge/jdk->=v17-FF7900.svg?style=for-the-badge&logo=openjdk&logoColor=FF7900)
-![Apache Kafka](https://img.shields.io/badge/Kafka->=v3.5.0-F28D1A?style=for-the-badge&logo=apache-kafka)
+![JDK-17](https://img.shields.io/badge/jdk->=v17-FF7900.svg?style=for-the-badge&logo=openjdk&logoColor=FF7900&color=FF7900)
+![Apache Kafka](https://img.shields.io/badge/Kafka->=v3.5.0-F28D1A?style=for-the-badge&logo=apache-kafka&logoColor=CC6699)
 
 # Steps
 
