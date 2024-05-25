@@ -9,7 +9,7 @@ app:
 spring:
   kafka:
     properties:
-      security.protocol: PLAIN_TEXT
+      security.protocol: PLAINTEXT
       sasl:
          mechanism: PLAIN
 #        mechanism: SCRAM-SHA-512
@@ -26,6 +26,7 @@ spring:
         commit.interval.ms: 100 # default: 100 when exactly_once
         processing.guarantee: exactly_once_v2
         default.deserialization.exception.handler: org.apache.kafka.streams.errors.LogAndFailExceptionHandler
+
     producer:
       acks: -1
       retries: 5
