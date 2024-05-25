@@ -20,8 +20,11 @@ class S3RepositoryImplTest {
       objectPath = "sources/original04.ndjson"
     )
     val byteArray : ByteArray = s3Repository.findByBucketPath(s3Path)
-
-    println(byteArray.toString(Charsets.UTF_8))
+    byteArray.toString(Charsets.UTF_8)
+      .trim()
+      .split("\n")
+      .map { it.toLong() }
+      .forEach { println(it) }
   }
 
   @Test

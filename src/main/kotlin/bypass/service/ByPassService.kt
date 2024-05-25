@@ -1,18 +1,22 @@
 package bypass.service
 
 import bypass.config.KafkaConfig
-import bypass.service.s3.S3Service
+import bypass.domain.s3.S3Path
+import bypass.repository.s3.S3Repository
+import com.fasterxml.jackson.databind.ObjectMapper
+import kotlinx.coroutines.runBlocking
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.KStream
 import org.apache.kafka.streams.kstream.Produced
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
 
-@Component
+@Service
 class ByPassService(
-  private val s3Service: S3Service
+  private val objectMapper: ObjectMapper,
+  private val s3Repository: S3Repository,
 ) {
 
   @Autowired
@@ -21,15 +25,22 @@ class ByPassService(
       KafkaConfig.SOURCE_TOPIC,
       Consumed.with(Serdes.ByteArray(), Serdes.String())
     )
-
     s3Stream
-      // TODO: S3 Get Object and bypassing only (with stream?)
-//      .mapValues { s3Path-> s3Service.getObjectContentAsLines(s3Path) }
-      .mapValues { s3Path-> s3Path }
+      .mapValues { recordValue ->
+        objectMapper.readValue(recordValue, S3Path::class.java)
+      }
+      .flatMapValues { s3Path ->
+       runBlocking {
+          s3Repository.findByBucketPath(s3Path)
+            .toString(Charsets.UTF_8)
+            .trim()
+            .split("\n")
+            .map { it.toLong() }
+        }
+      }
       .to(
         KafkaConfig.SINK_TOPIC,
-//        Produced.with(Serdes.Integer(), Serdes.Long())
-        Produced.with(Serdes.ByteArray(), Serdes.String())
+        Produced.with(Serdes.ByteArray(), Serdes.Long())
       )
   }
 
