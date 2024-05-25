@@ -1,7 +1,8 @@
-package bypass.repository
+package bypass.repository.s3
 
 import aws.sdk.kotlin.services.s3.S3Client
 import aws.sdk.kotlin.services.s3.model.NoSuchKey
+import bypass.domain.s3.S3Path
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -14,22 +15,24 @@ class S3RepositoryImplTest {
 
   @Test
   fun findByBucketPath() = runTest {
-    val byteArray : ByteArray = s3Repository.findByBucketPath(
-      "milkcoke-logs",
-      "original.log"
+    val s3Path = S3Path(
+      bucket = "milkcoke-logs",
+      objectPath = "sources/original04.ndjson"
     )
+    val byteArray : ByteArray = s3Repository.findByBucketPath(s3Path)
 
     println(byteArray.toString(Charsets.UTF_8))
   }
 
   @Test
   fun failedToFindByBucketPath() = runTest {
+    val invalidS3Path = S3Path(
+      bucket = "milkcoke-logs",
+      objectPath = "invalid-path"
+    )
      assertThatThrownBy {
        runBlocking {
-         s3Repository.findByBucketPath(
-           "milkcoke-logs",
-           "invalid-path"
-         )
+         s3Repository.findByBucketPath(invalidS3Path)
        }
      }.isInstanceOf(NoSuchKey::class.java)
   }
