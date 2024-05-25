@@ -18,11 +18,8 @@ class S3RepositoryImpl(
       bucket = s3Path.bucket
       key = s3Path.objectPath
     }
-    return s3Client.use { s3 ->
-      s3.getObject(request) {response ->
-        response.body!!.toByteArray()
-      }
+    return s3Client.getObject(request) {response ->
+      response.body!!.toByteArray()
     }
-
   }
 }
