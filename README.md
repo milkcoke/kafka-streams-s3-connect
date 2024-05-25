@@ -47,7 +47,7 @@ $ scripts/splitfile.sh [target-file-path] [line-number]
 ## (1) S3 upload and extract s3 path list file
 ```bash
 # Upload a single file
-$ aws s3 cp [local-path] [s3-path] | tr '\r' '\n' | grep upload || awk '{print $4}' > "uploaded_list.txt"
+$ aws s3 cp [local-path] [s3-path] | tr '\r' '\n' | grep upload | awk '{print $4}' > "uploaded_list.txt"
 # Upload directory
 $ aws s3 cp [local-path] [s3-path] --recursive | tr '\r' '\n' | grep upload | awk '{print $4}' >> "uploaded_list.txt"
 ```
