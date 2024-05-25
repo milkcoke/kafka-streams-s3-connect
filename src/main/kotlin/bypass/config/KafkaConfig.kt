@@ -14,10 +14,6 @@ import org.springframework.kafka.config.KafkaStreamsConfiguration
 @Configuration
 @EnableKafkaStreams
 class KafkaConfig {
-    companion object {
-        const val SOURCE_TOPIC: String = "retry-topic"
-        const val SINK_TOPIC: String = "ingest-topic"
-    }
 
     @Bean(KafkaStreamsDefaultConfiguration.DEFAULT_STREAMS_CONFIG_BEAN_NAME)
     fun kafkaStreamsConfig(kafkaProperties: KafkaProperties): KafkaStreamsConfiguration {
@@ -42,7 +38,6 @@ class KafkaConfig {
             StreamsConfig.producerPrefix(SaslConfigs.SASL_MECHANISM) to producerProperties.get(SaslConfigs.SASL_MECHANISM),
         )
         streamsConfig.putAll(config)
-
 
         return KafkaStreamsConfiguration(streamsConfig)
     }

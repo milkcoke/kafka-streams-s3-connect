@@ -1,6 +1,6 @@
 package bypass.service
 
-import bypass.config.KafkaConfig
+import bypass.config.TopicConfig
 import bypass.domain.s3.S3Path
 import bypass.repository.s3.S3Repository
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class ByPassService(
+  private val topicConfig: TopicConfig,
   private val objectMapper: ObjectMapper,
   private val s3Repository: S3Repository,
 ) {
@@ -22,7 +23,7 @@ class ByPassService(
   @Autowired
   fun buildPipeline(streamsBuilder: StreamsBuilder) {
     val s3Stream : KStream<ByteArray, String> = streamsBuilder.stream(
-      KafkaConfig.SOURCE_TOPIC,
+      topicConfig.sourceTopic,
       Consumed.with(Serdes.ByteArray(), Serdes.String())
     )
     s3Stream
@@ -39,7 +40,7 @@ class ByPassService(
         }
       }
       .to(
-        KafkaConfig.SINK_TOPIC,
+        topicConfig.sinkTopic,
         Produced.with(Serdes.ByteArray(), Serdes.Long())
       )
   }

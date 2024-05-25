@@ -3,8 +3,8 @@ server:
 
 app:
   topic:
-    source-topic: retry
-    sink-topic: sink-topic
+    source-topic: retry-topic
+    sink-topic: ingest-topic
 
 spring:
   kafka:
