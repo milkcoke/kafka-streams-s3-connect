@@ -24,8 +24,9 @@ class KafkaTopicConfig(
     return TopicBuilder
       .name(topicConfig.sinkTopic)
       .partitions(3)
-      .replicas(5)
+      .replicas(2)
       .config("min.insync.replicas", "2")
+      .config("message.timestamp.type", "LogAppendTime")
       .build()
   }
 }
