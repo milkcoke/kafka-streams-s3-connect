@@ -41,6 +41,6 @@ spring:
       auto-offset-reset: earliest # default: earliest
       properties:
         poll.ms: 100 # default: 100
-        fetch.max.bytes: 52428800  # default: 52428800 (5MB)
+        fetch.max.bytes: 57671680  # default: 57671680 (55MB)
         key.deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
         value.deserializer: org.apache.kafka.common.serialization.StringDeserializer

@@ -51,7 +51,7 @@ $ scripts/splitfile.sh [target-file-path] [line-number]
 # Upload a single file
 $ aws s3 cp [local-file-path] [s3-path] | tr '\r' '\n' | grep upload | awk '{print $4}' > "uploaded_list.txt"
 # Upload directory
-$ aws s3 cp [local-directory-path] [s3-path] --recursive | tr '\r' '\n' | grep upload | awk '{print $4}' >> "uploaded_list.txt"
+$ aws s3 cp [local-directory-path] [s3-path] | tr '\r' '\n' | grep upload | awk '{print $4}' >> "uploaded_list.txt"
 ```
 
 > ⚠️ `tr` removes the line feed character automatically

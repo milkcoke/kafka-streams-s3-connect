@@ -1,17 +1,17 @@
 plugins {
-	id("org.springframework.boot") version "3.3.1"
-	id("io.spring.dependency-management") version "1.1.5"
+	id("org.springframework.boot") version "3.3.4"
+	id("io.spring.dependency-management") version "1.1.7"
 	id("com.google.cloud.tools.jib") version "3.4.3"
-	kotlin("plugin.spring") version "2.0.0"
-	kotlin("jvm") version "2.0.0"
+	kotlin("plugin.spring") version "2.1.20"
+	kotlin("jvm") version "2.1.20"
 }
 
 group = "example"
-version = "1.0.0"
+version = "1.0.1"
 
 java {
-	sourceCompatibility = JavaVersion.VERSION_17
-	targetCompatibility = JavaVersion.VERSION_17
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
 }
 
 repositories {
@@ -22,12 +22,12 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.kafka:spring-kafka")
-	implementation("org.apache.kafka:kafka-clients:3.7.1")
-	implementation("org.apache.kafka:kafka-streams:3.7.1")
-	implementation ("io.micrometer:micrometer-registry-prometheus:1.13.2")
+	implementation("org.apache.kafka:kafka-clients:3.9.0")
+	implementation("org.apache.kafka:kafka-streams:3.9.0")
+	implementation ("io.micrometer:micrometer-registry-prometheus:1.13.4")
 
 	// https://github.com/awslabs/aws-sdk-kotlin/issues/765
-	implementation("aws.sdk.kotlin:s3:1.2.50") {
+	implementation("aws.sdk.kotlin:s3:1.4.56") {
 		constraints {
 			implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.14") {
 				because("okhttp3 ~v4 does not support Request builder (kotlin reflect)")
@@ -52,18 +52,10 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.apache.kafka:kafka-streams-test-utils:3.7.1")
 
-	compileOnly("org.projectlombok:lombok:1.18.34")
+	compileOnly("org.projectlombok:lombok:1.18.38")
 	annotationProcessor("org.projectlombok:lombok")
 }
 
 tasks.withType<Test> {
 	useJUnitPlatform()
 }
-
-kotlin {
-	jvmToolchain(17)
-}
-
-
-
-
