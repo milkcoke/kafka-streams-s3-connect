@@ -1,1 +1,1 @@
-rootProject.name = "kafka-streams-s3-connect"
+rootProject.name = "s3-source-connect"
