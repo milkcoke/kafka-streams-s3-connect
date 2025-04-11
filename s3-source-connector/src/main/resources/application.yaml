@@ -1,0 +1,41 @@
+spring:
+  kafka:
+    bootstrap-servers:
+      - Kafka00Broker:9092
+      - Kafka01Broker:9092
+      - Kafka02Broker:9092
+    producer:
+      acks: -1
+      retries: 5
+      properties:
+        key.serializer: org.apache.kafka.common.serialization.StringSerializer
+        value.serializer: org.apache.kafka.common.serialization.ByteArraySerializer
+        security.protocol: PLAINTEXT
+        sasl.mechanism: PLAIN
+      transaction-id-prefix: "s3-source-connector"
+
+    consumer:
+      max-poll-records: 1_000 # default: 1000
+      properties:
+        poll.ms: 100 # default: 100
+        fetch.max.bytes: 52428800  # default: 52428800 (5MB)
+        # static membership
+        #        group.instance.id: stateless-group
+        key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value.deserializer: org.apache.kafka.common.serialization.LongDeserializer
+        security.protocol: PLAINTEXT
+        sasl.mechanism: PLAIN
+
+
+management:
+  # /actuator/prometheus 노출
+  endpoints:
+    prometheus:
+      enabled: true
+    # By default, only the health endpoint is exposed over HTTP and JMX
+    health:
+      enabled: true
+    # Actuator 페이지로 노출할 endpoint 에 prometheus 포함
+    web:
+      exposure:
+        include: "prometheus,health,info,metrics"
