@@ -12,7 +12,7 @@ public class TopicConfig {
   public NewTopic offsetTopic() {
     return TopicBuilder
       .name("s3-offset-topic")
-      .partitions(1)
+      .partitions(2)
       .replicas(3)
       .compact()
       .build();
