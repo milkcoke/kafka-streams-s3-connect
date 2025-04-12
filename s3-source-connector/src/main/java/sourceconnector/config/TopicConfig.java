@@ -15,6 +15,7 @@ public class TopicConfig {
       .partitions(2)
       .replicas(3)
       .compact()
+      .config("segment.bytes", "16777216")
       .build();
   }
 
