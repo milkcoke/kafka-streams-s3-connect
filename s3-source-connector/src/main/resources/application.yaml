@@ -12,7 +12,7 @@ spring:
         value.serializer: org.apache.kafka.common.serialization.ByteArraySerializer
         security.protocol: PLAINTEXT
         sasl.mechanism: PLAIN
-      transaction-id-prefix: "s3-source-connector"
+        transactional.id: "s3-source-connector"
 
     consumer:
       max-poll-records: 1_000 # default: 1000
