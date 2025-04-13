@@ -1,5 +1,6 @@
 package sourceconnector.service;
 
+import lombok.extern.slf4j.Slf4j;
 import sourceconnector.domain.BatchMessages;
 import sourceconnector.domain.OffsetRecord;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Properties;
 
+@Slf4j
 @RequiredArgsConstructor
 public class ProduceService {
   private final String logTopic;
@@ -31,26 +33,31 @@ public class ProduceService {
     List<String> messages = batchMessages.get();
 
     this.kafkaProducer.initTransactions();
-    this.kafkaProducer.beginTransaction();
+    try {
+      this.kafkaProducer.beginTransaction();
 
-    for (String message : messages) {
+      for (String message : messages) {
+        this.kafkaProducer.send(new ProducerRecord<>(
+          logTopic,
+          null,
+          message.getBytes())
+        );
+      }
       this.kafkaProducer.send(new ProducerRecord<>(
-        logTopic,
-        null,
-        message.getBytes())
-      );
+        this.offsetTopic,
+        offsetRecord.key(),
+        ByteBuffer
+          .allocate(Long.BYTES)
+          .putLong(offsetRecord.offset())
+          .array()
+      ));
+
+      this.kafkaProducer.commitTransaction();
+    } catch (Exception e) {
+      log.error("Abort transaction since {}", e.getMessage());
+      this.kafkaProducer.abortTransaction();
     }
 
-    this.kafkaProducer.send(new ProducerRecord<>(
-      this.offsetTopic,
-      offsetRecord.key(),
-      ByteBuffer
-        .allocate(Long.BYTES)
-        .putLong(offsetRecord.offset())
-        .array()
-    ));
-
-    this.kafkaProducer.commitTransaction();
   }
 
 }
