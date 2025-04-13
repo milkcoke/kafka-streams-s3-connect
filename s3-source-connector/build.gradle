@@ -15,10 +15,13 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.apache.kafka:kafka-clients:4.0.0")
     implementation("org.springframework.kafka:spring-kafka:3.3.4")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.18.3")
 
     compileOnly("org.projectlombok:lombok:1.18.38")
+    testCompileOnly("org.projectlombok:lombok:1.18.38")
     testImplementation platform('org.junit:junit-bom:5.10.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation('org.junit.jupiter:junit-jupiter')
+    testImplementation("org.assertj:assertj-core:3.27.3")
 }
 
 test {

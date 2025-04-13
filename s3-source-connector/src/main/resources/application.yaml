@@ -25,6 +25,9 @@ spring:
         value.deserializer: org.apache.kafka.common.serialization.LongDeserializer
         security.protocol: PLAINTEXT
         sasl.mechanism: PLAIN
+    admin:
+      security:
+        protocol: PLAINTEXT
 
 
 management:
