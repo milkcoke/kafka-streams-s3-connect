@@ -18,15 +18,16 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
-import static sourceconnector.domain.SpecialOffset.END_OFFSET;
-import static sourceconnector.domain.SpecialOffset.INITIAL_OFFSET;
+import static sourceconnector.domain.OffsetStatus.COMPLETE_OFFSET;
+import static sourceconnector.domain.OffsetStatus.INITIAL_OFFSET;
 
 @Slf4j
 @RequiredArgsConstructor
 public class S3OffsetRepository implements OffsetRepository {
   private final Consumer<String, Long> consumer;
+  private final int maxPollRecords;
   private final AdminClient adminClient;
-  private final Duration timeout = Duration.ofSeconds(1);
+  private final Duration timeout = Duration.ofSeconds(20);
 
   @Override
   public OffsetRecord getLastOffsetRecord(String topicName, String s3Path) {
@@ -35,23 +36,31 @@ public class S3OffsetRepository implements OffsetRepository {
     this.consumer.assign(List.of(topicPartition));
     long startOffset = this.consumer.beginningOffsets(List.of(topicPartition)).get(topicPartition);
     long currentOffset = this.consumer.endOffsets(List.of(topicPartition)).get(topicPartition);
-    int batchSize = 500;
 
     while (currentOffset >= startOffset) {
+      currentOffset = Math.max(startOffset, currentOffset - maxPollRecords); // start 보다 더 낮으면 ㅈㅈ
+
       this.consumer.seek(topicPartition, currentOffset);
+
       List<ConsumerRecord<String, Long>> records = this.consumer
         .poll(timeout)
-        .records(topicPartition);
-      currentOffset -= batchSize;
-      if (records.isEmpty()) continue;
+        .records(topicPartition)
+        .stream()
+        .filter(record -> record.key().equals(s3Path))
+        .toList();
 
-      boolean completedOffset = records.stream()
-        .anyMatch(record -> record.value() == END_OFFSET.getValue());
+      if (records.isEmpty()) {
+        if (currentOffset == startOffset) break;
+        else continue;
+      }
 
-      if (completedOffset) {
+      boolean isCompleted = records.stream()
+        .anyMatch(record -> record.value() == COMPLETE_OFFSET.getValue());
+
+      if (isCompleted) {
         return new S3OffsetRecord(
           s3Path,
-          END_OFFSET.getValue()
+          COMPLETE_OFFSET.getValue()
         );
       }
 

@@ -10,6 +10,8 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import sourceconnector.domain.OffsetRecord;
+import sourceconnector.domain.OffsetStatus;
 
 import java.util.List;
 import java.util.Map;
@@ -31,16 +33,29 @@ class S3OffsetRepositoryTest {
     consumerProps.putAll(Map.of(
       CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9093",
       ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class,
-      ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class
+      ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class,
+      ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG, 57_671_680, // 55MB
+      ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 50_000
     ));
     Consumer<String, Long> consumer = new KafkaConsumer<>(consumerProps);
 
-    repository = new S3OffsetRepository(consumer, adminClient);
+    repository = new S3OffsetRepository(consumer, 2000, adminClient);
   }
 
+  @DisplayName("Should get INITIAL Offset when not processed key ")
   @Test
   void getLastOffsetRecord() {
+     OffsetRecord lastOffset = repository.getLastOffsetRecord(
+      "s3-offset-topic",
+      "s3://test/2025/04/13/test.txt"
+    );
 
+    assertThat(lastOffset)
+      .extracting(OffsetRecord::key, OffsetRecord::offset)
+      .containsExactly(
+        "s3://test/2025/04/13/test.txt",
+        OffsetStatus.INITIAL_OFFSET.getValue()
+      );
   }
 
   @DisplayName("Should always get same partition when same key is input")
