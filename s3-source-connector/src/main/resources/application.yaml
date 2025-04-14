@@ -15,10 +15,11 @@ spring:
         transactional.id: "s3-source-connector"
 
     consumer:
-      max-poll-records: 1_000 # default: 1000
+      max-poll-records: 50_000 # default: 1000
       properties:
         poll.ms: 100 # default: 100
-        fetch.max.bytes: 52428800  # default: 52428800 (5MB)
+        fetch.max.bytes: 57671680  # default: 57671680 (55MB)
+        max.partition.fetch.bytes: 57671680 # default: 1MB
         # static membership
         #        group.instance.id: stateless-group
         key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
