@@ -16,7 +16,7 @@ volumes:
   Kafka02Data:
     driver: local
   Kafka02Log:
-    driver: loca
+    driver: local
 
 services:
   ##Kafka 00
