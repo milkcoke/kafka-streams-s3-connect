@@ -27,7 +27,7 @@ public class S3OffsetRepository implements OffsetRepository {
   private final Consumer<String, Long> consumer;
   private final int maxPollRecords;
   private final AdminClient adminClient;
-  private final Duration timeout = Duration.ofSeconds(20);
+  private final Duration timeout = Duration.ofMillis(100);
 
   @Override
   public OffsetRecord getLastOffsetRecord(String topicName, String s3Path) {
