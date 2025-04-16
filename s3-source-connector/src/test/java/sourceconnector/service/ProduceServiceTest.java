@@ -1,15 +1,25 @@
 package sourceconnector.service;
 
 import org.apache.kafka.clients.CommonClientConfigs;
+import org.apache.kafka.clients.consumer.*;
+import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
+import org.apache.kafka.common.serialization.IntegerDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.junit.jupiter.api.DisplayName;
 import sourceconnector.domain.BatchMessages;
 import sourceconnector.domain.DefaultBatchLogs;
 import sourceconnector.domain.OffsetRecord;
 import sourceconnector.domain.S3OffsetRecord;
 import org.junit.jupiter.api.Test;
 
+import java.nio.ByteBuffer;
+import java.time.Duration;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -46,5 +56,59 @@ class ProduceServiceTest {
     produceService.send(offsetRecord, batchMessages);
 
 
+  }
+
+  @DisplayName("Message 1000개 미리 쌓아놓고 100개 사라지면?")
+  @Test
+  void AthousandMessagesTest() {
+    // given
+    try (KafkaProducer<String, byte[]> producer = new KafkaProducer<>(props)) {
+      producer.initTransactions();
+      producer.beginTransaction();
+      for (int i = 200_000; i < 300_000; i++) {
+        producer.send(new ProducerRecord<>("offset-test-topic", null, ByteBuffer
+          .allocate(Integer.BYTES)
+          .putInt(i)
+          .array()));
+      }
+      producer.commitTransaction();
+    } catch (Exception e) {
+      System.out.println("실패 ㅋ");
+    }
+  }
+
+  @DisplayName("Consumer 미리 300개 쌓아놓고 첫 오프셋은 301인데 1000번까지 쌓인 상황에서 0부터 poll()")
+  @Test
+  void pollThousandTest() {
+    // given
+    Properties props = new Properties();
+    props.putAll(Map.of(
+      CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",
+      ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class,
+      ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class,
+      ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG, 52428800,
+      ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 210_000
+    ));
+    try(Consumer<byte[], Integer> consumer = new KafkaConsumer<>(props)) {
+
+      TopicPartition topicPartition = new TopicPartition("offset-test-topic", 0);
+      consumer.assign(List.of(topicPartition));
+      // when
+      consumer.seek(topicPartition, 100_004);
+      ConsumerRecords<byte[], Integer> consumerRecords = consumer.poll(Duration.ofNanos(0L));
+
+      // then
+      List<ConsumerRecord<byte[], Integer>> records = consumerRecords.records(topicPartition);
+      System.out.println("Size : " + records.size());
+      System.out.println("Max : " + records.stream().max(Comparator.comparingInt(ConsumerRecord::value)));
+      System.out.println("Min : " + records.stream().min(Comparator.comparingInt(ConsumerRecord::value)));
+
+      var secondConsumerRecords = consumer.poll(Duration.ofMillis(100L));
+      var secondRecords = secondConsumerRecords.records(topicPartition);
+      System.out.println("Size : " + secondRecords.size());
+      System.out.println("Max : " + secondRecords.stream().max(Comparator.comparingInt(ConsumerRecord::value)));
+      System.out.println("Min : " +  secondRecords.stream().min(Comparator.comparingInt(ConsumerRecord::value)));
+
+    }
   }
 }
