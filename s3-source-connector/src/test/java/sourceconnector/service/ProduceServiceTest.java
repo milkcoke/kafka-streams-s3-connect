@@ -34,7 +34,8 @@ class ProduceServiceTest {
         org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class,
         org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class,
         org.apache.kafka.clients.producer.ProducerConfig.LINGER_MS_CONFIG, 100,
-        ProducerConfig.TRANSACTIONAL_ID_CONFIG, "test-s3"
+        ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true
+//        ProducerConfig.TRANSACTIONAL_ID_CONFIG, "test-s3"
       )
     );
   }
@@ -63,15 +64,16 @@ class ProduceServiceTest {
   void AthousandMessagesTest() {
     // given
     try (KafkaProducer<String, byte[]> producer = new KafkaProducer<>(props)) {
-      producer.initTransactions();
-      producer.beginTransaction();
-      for (int i = 200_000; i < 300_000; i++) {
-        producer.send(new ProducerRecord<>("offset-test-topic", null, ByteBuffer
+//      producer.initTransactions();
+//      producer.beginTransaction();
+      for (int i = 1001; i <= 1_001; i++) {
+        producer.send(new ProducerRecord<>("offset-test-topic", String.valueOf(i), ByteBuffer
           .allocate(Integer.BYTES)
           .putInt(i)
           .array()));
       }
-      producer.commitTransaction();
+      producer.flush();
+//      producer.commitTransaction();
     } catch (Exception e) {
       System.out.println("실패 ㅋ");
     }
@@ -86,24 +88,25 @@ class ProduceServiceTest {
       CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092",
       ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class,
       ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class,
+      ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, 2000,
       ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG, 52428800,
-      ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 210_000
+      ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 500
     ));
     try(Consumer<byte[], Integer> consumer = new KafkaConsumer<>(props)) {
 
       TopicPartition topicPartition = new TopicPartition("offset-test-topic", 0);
       consumer.assign(List.of(topicPartition));
       // when
-      consumer.seek(topicPartition, 100_004);
-      ConsumerRecords<byte[], Integer> consumerRecords = consumer.poll(Duration.ofNanos(0L));
+      consumer.seek(topicPartition,100);
 
       // then
+      var consumerRecords = consumer.poll(Duration.ofSeconds(60L));
       List<ConsumerRecord<byte[], Integer>> records = consumerRecords.records(topicPartition);
       System.out.println("Size : " + records.size());
       System.out.println("Max : " + records.stream().max(Comparator.comparingInt(ConsumerRecord::value)));
       System.out.println("Min : " + records.stream().min(Comparator.comparingInt(ConsumerRecord::value)));
 
-      var secondConsumerRecords = consumer.poll(Duration.ofMillis(100L));
+      var secondConsumerRecords = consumer.poll(Duration.ofSeconds(120L));
       var secondRecords = secondConsumerRecords.records(topicPartition);
       System.out.println("Size : " + secondRecords.size());
       System.out.println("Max : " + secondRecords.stream().max(Comparator.comparingInt(ConsumerRecord::value)));
