@@ -18,14 +18,12 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
-import static sourceconnector.domain.OffsetStatus.COMPLETE_OFFSET;
 import static sourceconnector.domain.OffsetStatus.INITIAL_OFFSET;
 
 @Slf4j
 @RequiredArgsConstructor
 public class S3OffsetRepository implements OffsetRepository {
   private final Consumer<String, Long> consumer;
-  private final int maxPollRecords;
   private final AdminClient adminClient;
   private final Duration timeout = Duration.ofMillis(100);
 
@@ -34,11 +32,10 @@ public class S3OffsetRepository implements OffsetRepository {
     int partition = this.getPartitionsForTopic(topicName, s3Path);
     TopicPartition topicPartition = new TopicPartition(topicName, partition);
     this.consumer.assign(List.of(topicPartition));
-    long startOffset = this.consumer.beginningOffsets(List.of(topicPartition)).get(topicPartition);
-    long currentOffset = startOffset;
+    long currentOffset = this.consumer.beginningOffsets(List.of(topicPartition)).get(topicPartition);
     long endOffset = this.consumer.endOffsets(List.of(topicPartition)).get(topicPartition);
 
-    OffsetRecord lastOffsetRecord;
+    OffsetRecord lastOffsetRecord = new S3OffsetRecord(s3Path, INITIAL_OFFSET.getValue());
 
     while (currentOffset < endOffset) {
       this.consumer.seek(topicPartition, currentOffset);
@@ -47,9 +44,7 @@ public class S3OffsetRepository implements OffsetRepository {
         .poll(timeout)
         .records(topicPartition);
 
-//       var secondList = this.consumer.poll(timeout).records(topicPartition);
-
-       if (recordList.isEmpty()) break;
+       if (recordList.isEmpty()) break; // Should not bey empty
 
        long lastOffset = recordList
         .stream()
@@ -59,25 +54,18 @@ public class S3OffsetRepository implements OffsetRepository {
 
       currentOffset = lastOffset + 1;
 
-      List<ConsumerRecord<String, Long>> records = recordList
+      lastOffsetRecord = recordList
         .stream()
         .filter(record -> record.key().equals(s3Path))
-        .toList();
-      if (records.isEmpty()) continue;
-
-      ConsumerRecord<String, Long> record = records.getLast();
-      lastOffsetRecord = new S3OffsetRecord(
-         record.key(),
-         record.offset()
-       );
-
-      if (lastOffsetRecord.offset() == COMPLETE_OFFSET.getValue()) {
-        return lastOffsetRecord;
-      }
-
+        .max(Comparator.comparingLong(ConsumerRecord::offset))
+        .map(record -> new S3OffsetRecord(
+          record.key(),
+          record.offset()
+        ))
+        .orElse((S3OffsetRecord) lastOffsetRecord);
     }
 
-    return new S3OffsetRecord(s3Path, INITIAL_OFFSET.getValue());
+    return lastOffsetRecord;
   }
 
   @Override
