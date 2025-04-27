@@ -70,7 +70,7 @@ class S3OffsetRepositoryTest {
     ));
     Consumer<String, Long> consumer = new KafkaConsumer<>(consumerProps);
 
-    repository = new S3OffsetRepository(consumer, 2000, adminClient);
+    repository = new S3OffsetRepository(consumer, adminClient);
   }
 
   @AfterEach
